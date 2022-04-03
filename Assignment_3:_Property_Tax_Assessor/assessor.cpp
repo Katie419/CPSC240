@@ -18,7 +18,7 @@ int main()
 
 	return_code = manager();
 
-	printf("%s%1.18lf%s\n","The Assessor’s Office received this number ",return_code," and will keep it.\n");
+  printf("%s%1.18lf%s\n","The Assessor’s Office received this number ",return_code," and will keep it.\n");
   printf("Next an integer 0 will be sent to the operating system as a signal of successful completion.");
 	return 0;
 
