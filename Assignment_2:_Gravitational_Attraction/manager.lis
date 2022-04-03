@@ -1,0 +1,390 @@
+     1                                  extern printf
+     2                                  extern scanf
+     3                                  extern strlen
+     4                                  extern stdin
+     5                                  extern fgets
+     6                                  extern isfloat
+     7                                  extern atof
+     8                                  
+     9                                  INPUT_LEN equ 64
+    10                                  
+    11                                  global gravity
+    12                                  
+    13                                  segment .data
+    14                                  
+    15 00000000 9A99999999992340        gravity_value dq 0x402399999999999A
+    16                                  
+    17 00000008 257300                  string_format db "%s", 0
+    18 0000000B 256C6600                float_format db "%lf", 0
+    19                                  
+    20 0000000F 4966206572726F7273-     intro db "If errors are discovered please report them to Columbia.Inc at columbia.com for a rapid update.  At Columbia, Inc, the customer comes first.", 10 , 0
+    20 00000018 206172652064697363-
+    20 00000021 6F766572656420706C-
+    20 0000002A 65617365207265706F-
+    20 00000033 7274207468656D2074-
+    20 0000003C 6F20436F6C756D6269-
+    20 00000045 612E496E6320617420-
+    20 0000004E 636F6C756D6269612E-
+    20 00000057 636F6D20666F722061-
+    20 00000060 207261706964207570-
+    20 00000069 646174652E20204174-
+    20 00000072 20436F6C756D626961-
+    20 0000007B 2C20496E632C207468-
+    20 00000084 6520637573746F6D65-
+    20 0000008D 7220636F6D65732066-
+    20 00000096 697273742E0A00     
+    21                                  
+    22 0000009D 506C6561736520656E-     name_prompt db "Please enter your first and last names: ", 0
+    22 000000A6 74657220796F757220-
+    22 000000AF 666972737420616E64-
+    22 000000B8 206C617374206E616D-
+    22 000000C1 65733A2000         
+    23                                  
+    24 000000C6 506C6561736520656E-     job_prompt db "Please enter your job title (Nurse, Programmer, Gamer, Carpenter, Mechanic, Bus Driver, Barista, Hair Dresser, Acrobat, Farmer, Sales Clerk, etc): ", 0
+    24 000000CF 74657220796F757220-
+    24 000000D8 6A6F62207469746C65-
+    24 000000E1 20284E757273652C20-
+    24 000000EA 50726F6772616D6D65-
+    24 000000F3 722C2047616D65722C-
+    24 000000FC 2043617270656E7465-
+    24 00000105 722C204D656368616E-
+    24 0000010E 69632C204275732044-
+    24 00000117 72697665722C204261-
+    24 00000120 72697374612C204861-
+    24 00000129 697220447265737365-
+    24 00000132 722C204163726F6261-
+    24 0000013B 742C204661726D6572-
+    24 00000144 2C2053616C65732043-
+    24 0000014D 6C65726B2C20657463-
+    24 00000156 293A2000           
+    25                                  
+    26 0000015A 5468616E6B20796F75-     job_response db "Thank you %s.  We appreciate your business.", 10, 0
+    26 00000163 2025732E2020576520-
+    26 0000016C 617070726563696174-
+    26 00000175 6520796F7572206275-
+    26 0000017E 73696E6573732E0A00 
+    27                                  
+    28 00000187 576520756E64657273-     purpose db "We understand that you plan to drop a marble from a high vantage point.", 10, 0
+    28 00000190 74616E642074686174-
+    28 00000199 20796F7520706C616E-
+    28 000001A2 20746F2064726F7020-
+    28 000001AB 61206D6172626C6520-
+    28 000001B4 66726F6D2061206869-
+    28 000001BD 67682076616E746167-
+    28 000001C6 6520706F696E742E0A-
+    28 000001CF 00                 
+    29                                  
+    30 000001D0 506C6561736520656E-     info_prompt db "Please enter the height of the marble above ground surface in meters: ", 0
+    30 000001D9 746572207468652068-
+    30 000001E2 6569676874206F6620-
+    30 000001EB 746865206D6172626C-
+    30 000001F4 652061626F76652067-
+    30 000001FD 726F756E6420737572-
+    30 00000206 6661636520696E206D-
+    30 0000020F 65746572733A2000   
+    31                                  
+    32 00000217 546865206D6172626C-     calculation db "The marble you drop from that height will reach earth after %.9lf seconds.", 10, 0
+    32 00000220 6520796F752064726F-
+    32 00000229 702066726F6D207468-
+    32 00000232 617420686569676874-
+    32 0000023B 2077696C6C20726561-
+    32 00000244 636820656172746820-
+    32 0000024D 616674657220252E39-
+    32 00000256 6C66207365636F6E64-
+    32 0000025F 732E0A00           
+    33                                  
+    34 00000263 416E206572726F7220-     error db "An error was detected in the input data.  You may run this program again.", 10, 0
+    34 0000026C 776173206465746563-
+    34 00000275 74656420696E207468-
+    34 0000027E 6520696E7075742064-
+    34 00000287 6174612E2020596F75-
+    34 00000290 206D61792072756E20-
+    34 00000299 746869732070726F67-
+    34 000002A2 72616D20616761696E-
+    34 000002AB 2E0A00             
+    35                                  
+    36 000002AE 5468616E6B20796F75-     final_message db "Thank you %s for your participation.  May you never lose sight of the goal.", 10, 0
+    36 000002B7 20257320666F722079-
+    36 000002C0 6F7572207061727469-
+    36 000002C9 6369706174696F6E2E-
+    36 000002D2 20204D617920796F75-
+    36 000002DB 206E65766572206C6F-
+    36 000002E4 736520736967687420-
+    36 000002ED 6F662074686520676F-
+    36 000002F6 616C2E0A00         
+    37                                  
+    38                                  segment .bss
+    39                                  
+    40 00000000 <res 00000040>          user_name resb INPUT_LEN
+    41 00000040 <res 00000040>          job_name resb INPUT_LEN
+    42 00000080 <res 00000040>          user_input resb INPUT_LEN
+    43                                  
+    44                                  segment .text
+    45                                  gravity:
+    46                                  
+    47                                  
+    48 00000000 55                      push rbp ; Push memory address of base of previous stack frame onto stack top
+    49                                  
+    50 00000001 4889E5                  mov rbp, rsp ; Copy value of stack pointer into base pointer, rbp = rsp = both point to stack top
+    51                                      ; Rbp now holds the address of the new stack frame, i.e "top" of stack
+    52                                  
+    53 00000004 57                      push rdi ; Backup rdi
+    54 00000005 56                      push rsi ; Backup rsi
+    55 00000006 52                      push rdx ; Backup rdx
+    56 00000007 51                      push rcx ; Backup rcx
+    57 00000008 4150                    push r8 ; Backup r8
+    58 0000000A 4151                    push r9 ; Backup r9
+    59 0000000C 4152                    push r10 ; Backup r10
+    60 0000000E 4153                    push r11 ; Backup r11
+    61 00000010 4154                    push r12 ; Backup r12
+    62 00000012 4155                    push r13 ; Backup r13
+    63 00000014 4156                    push r14 ; Backup r14
+    64 00000016 4157                    push r15 ; Backup r15
+    65 00000018 53                      push rbx ; Backup rbx
+    66 00000019 9C                      pushf ; Backup rflags
+    67                                  
+    68                                  ;==============
+    69                                  ;print intro message
+    70 0000001A B800000000              mov rax, 0
+    71 0000001F 48BF-                   mov rdi, string_format
+    71 00000021 [0800000000000000] 
+    72 00000029 48BE-                   mov rsi, intro
+    72 0000002B [0F00000000000000] 
+    73 00000033 E8(00000000)            call printf
+    74                                  
+    75                                  ;===============
+    76                                  ;Obtain the user's name
+    77                                  
+    78                                  ;-----
+    79                                  ;print name prompt
+    80                                  
+    81 00000038 B800000000              mov rax, 0
+    82 0000003D 48BF-                   mov rdi, string_format
+    82 0000003F [0800000000000000] 
+    83 00000047 48BE-                   mov rsi, name_prompt
+    83 00000049 [9D00000000000000] 
+    84 00000051 E8(00000000)            call printf
+    85                                  
+    86                                  ;-----
+    87                                  ;take user name input
+    88                                  
+    89 00000056 48BF-                   mov rdi, user_name
+    89 00000058 [0000000000000000] 
+    90 00000060 BE40000000              mov rsi, INPUT_LEN
+    91 00000065 488B1425[00000000]      mov rdx, [stdin]
+    92 0000006D E8(00000000)            call fgets
+    93                                  
+    94                                  ;-----
+    95                                  ;replace trailing \n with \0 in user_name
+    96                                  
+    97                                  ;get string length
+    98 00000072 B800000000              mov rax, 0
+    99 00000077 48BF-                   mov rdi, user_name
+    99 00000079 [0000000000000000] 
+   100 00000081 E8(00000000)            call strlen
+   101                                  
+   102                                  ;calculate address of <enter> inside
+   103 00000086 4883E801                sub rax, 1
+   104                                  ;move results into somewhere safer
+   105                                  ;mov r12, rax
+   106                                  ;edit the byte in the given address and replace it with a null character
+   107 0000008A C680[00000000]00        mov byte [user_name + rax], 0
+   108                                  
+   109                                  ;-----
+   110                                  ;===============
+   111                                  ;Obtain the user's job info
+   112                                  
+   113                                  ;-----
+   114                                  ;print job prompt
+   115                                  
+   116 00000091 B800000000              mov rax, 0
+   117 00000096 48BF-                   mov rdi, string_format
+   117 00000098 [0800000000000000] 
+   118 000000A0 48BE-                   mov rsi, job_prompt
+   118 000000A2 [C600000000000000] 
+   119 000000AA E8(00000000)            call printf
+   120                                  
+   121                                  ;-----
+   122                                  ;take user job input
+   123                                  
+   124 000000AF 48BF-                   mov rdi, job_name
+   124 000000B1 [4000000000000000] 
+   125 000000B9 BE40000000              mov rsi, INPUT_LEN
+   126 000000BE 488B1425[00000000]      mov rdx, [stdin]
+   127 000000C6 E8(00000000)            call fgets
+   128                                  
+   129                                  ;-----
+   130                                  ;replace trailing \n with \0 in job_name
+   131                                  
+   132                                  ;get string length
+   133 000000CB B800000000              mov rax, 0
+   134 000000D0 48BF-                   mov rdi, job_name
+   134 000000D2 [4000000000000000] 
+   135 000000DA E8(00000000)            call strlen
+   136                                  
+   137                                  ;calculate address of <enter>
+   138 000000DF 4883E801                sub rax, 1
+   139                                  ;move results into somewhere safer
+   140                                  ;mov r12, rax
+   141                                  ;edit the byte in the given address and replace it with a null character
+   142 000000E3 C680[40000000]00        mov byte [job_name + rax], 0
+   143                                  
+   144                                  ;-----
+   145                                  ;Print job_response message
+   146                                  
+   147 000000EA 48BF-                   mov rdi, job_response
+   147 000000EC [5A01000000000000] 
+   148 000000F4 B801000000              mov rax, 1
+   149 000000F9 48BE-                   mov rsi, job_name
+   149 000000FB [4000000000000000] 
+   150 00000103 E8(00000000)            call printf
+   151                                  
+   152                                  ;==========
+   153                                  ;Ask for and obtain user input for drop height
+   154                                  
+   155                                  ;-----
+   156                                  ;print purpose statement
+   157 00000108 B800000000              mov rax, 0
+   158 0000010D 48BF-                   mov rdi, string_format
+   158 0000010F [0800000000000000] 
+   159 00000117 48BE-                   mov rsi, purpose
+   159 00000119 [8701000000000000] 
+   160 00000121 E8(00000000)            call printf
+   161                                  
+   162                                  ;-----
+   163                                  ;Print info_prompt
+   164                                  
+   165 00000126 B800000000              mov rax, 0
+   166 0000012B 48BF-                   mov rdi, string_format
+   166 0000012D [0800000000000000] 
+   167 00000135 48BE-                   mov rsi, info_prompt
+   167 00000137 [D001000000000000] 
+   168 0000013F E8(00000000)            call printf
+   169                                  
+   170                                  ;-----
+   171                                  ;Take user input as a string so we can validate
+   172 00000144 48BF-                   mov rdi, user_input
+   172 00000146 [8000000000000000] 
+   173 0000014E BE40000000              mov rsi, INPUT_LEN
+   174 00000153 488B1425[00000000]      mov rdx, [stdin]
+   175 0000015B E8(00000000)            call fgets
+   176                                  
+   177                                  ;-----
+   178                                  ;replace trailing \n with \0 in job_name
+   179                                  
+   180                                  ;get string length
+   181 00000160 B800000000              mov rax, 0
+   182 00000165 48BF-                   mov rdi, user_input
+   182 00000167 [8000000000000000] 
+   183 0000016F E8(00000000)            call strlen
+   184                                  
+   185                                  ;calculate address of <enter>
+   186 00000174 4883E801                sub rax, 1
+   187                                  ;move results into somewhere safer
+   188 00000178 4989C4                  mov r12, rax
+   189                                  ;edit the byte in the given address and replace it with a null character
+   190 0000017B 41C68424[80000000]-     mov byte [user_input + r12], 0
+   190 00000183 00                 
+   191                                  
+   192                                  ;-----
+   193                                  ;===============
+   194                                  ;Validate input
+   195                                  
+   196                                  ;-----
+   197                                  ;Call the isfloat function
+   198                                  
+   199 00000184 B800000000              mov	rax, 0
+   200                                  ;pass the user_input as a argument of isfloat
+   201 00000189 48BF-                   mov	rdi, user_input
+   201 0000018B [8000000000000000] 
+   202 00000193 E8(00000000)            call isfloat
+   203                                  ;the returned values(0 or 1) of isfloat should be found in rax
+   204                                  ;0 or 1 (true or false)
+   205 00000198 4989C3                  mov	r11, rax
+   206                                  
+   207                                  ;-----
+   208                                  ;compare r11 which is the return of the function with 0(false)
+   209                                  
+   210 0000019B 4983FB00                cmp r11, 0
+   211 0000019F 7457                    je  invalid
+   212                                  
+   213                                  ;-----
+   214                                  ;===============
+   215                                  ;if valid, calculate the drop time
+   216                                  
+   217                                  ; time = sqrt(2h/9.8)
+   218                                  
+   219                                  ;convert user input to float
+   220 000001A1 B801000000              mov rax, 1
+   221 000001A6 48BF-                   mov rdi, user_input
+   221 000001A8 [8000000000000000] 
+   222 000001B0 E8(00000000)            call atof
+   223 000001B5 F2440F10F8              movsd xmm15, xmm0
+   224                                  
+   225 000001BA B802000000              mov rax, 2
+   226 000001BF F24C0F2AF0              cvtsi2sd xmm14, rax
+   227                                  ; movsd xmm12, xmm15
+   228                                  
+   229                                  ;xmm14 = 2
+   230                                  ;xmm12 = height
+   231                                  ;xmm15 = height
+   232                                  
+   233                                  ; xmm15 = 2 * h
+   234 000001C4 F2450F59FE              mulsd xmm15, xmm14
+   235 000001C9 F2440F102C25-           movsd xmm13, [gravity_value]
+   235 000001CF [00000000]         
+   236 000001D3 F2450F5EFD              divsd xmm15, xmm13
+   237 000001D8 F2450F51FF              sqrtsd xmm15, xmm15
+   238                                  
+   239 000001DD 48BF-                   mov rdi, calculation
+   239 000001DF [1702000000000000] 
+   240 000001E7 B801000000              mov rax, 1
+   241 000001EC F2410F10C7              movsd xmm0, xmm15
+   242 000001F1 E8(00000000)            call printf
+   243                                  
+   244                                  ;===============
+   245                                  
+   246 000001F6 EB20                    jmp exit
+   247                                  
+   248                                  ;===============
+   249                                  invalid:
+   250                                  
+   251                                  ;print error message
+   252 000001F8 B800000000              mov rax, 0
+   253 000001FD 48BF-                   mov rdi, string_format
+   253 000001FF [0800000000000000] 
+   254 00000207 48BE-                   mov rsi, error
+   254 00000209 [6302000000000000] 
+   255 00000211 E8(00000000)            call printf
+   256                                  
+   257 00000216 EB00                    jmp exit
+   258                                  
+   259                                  ;===============
+   260                                  exit:
+   261                                  
+   262                                  ;print final message
+   263 00000218 B800000000              mov rax, 0
+   264 0000021D 48BF-                   mov rdi, string_format
+   264 0000021F [0800000000000000] 
+   265 00000227 48BE-                   mov rsi, final_message
+   265 00000229 [AE02000000000000] 
+   266                                  
+   267                                  ;16 pops
+   268 00000231 9D                      popf ; Restore rflags
+   269 00000232 5B                      pop rbx ; Restore rbx
+   270 00000233 415F                    pop r15 ; Restore r15
+   271 00000235 415E                    pop r14 ; Restore r14
+   272 00000237 415D                    pop r13 ; Restore r13
+   273 00000239 415C                    pop r12 ; Restore r12
+   274 0000023B 415B                    pop r11 ; Restore r11
+   275 0000023D 415A                    pop r10 ; Restore r10
+   276 0000023F 4159                    pop r9 ; Restore r9
+   277 00000241 4158                    pop r8 ; Restore r8
+   278 00000243 59                      pop rcx ; Restore rcx
+   279 00000244 5A                      pop rdx ; Restore rdx
+   280 00000245 5E                      pop rsi ; Restore rsi
+   281 00000246 5F                      pop rdi ; Restore rdi
+   282                                  
+   283 00000247 5D                      pop rbp ; Restore rbp
+   284                                  
+   285 00000248 C3                      ret ;  return
