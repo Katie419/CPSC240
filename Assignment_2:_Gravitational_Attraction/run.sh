@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Program name: program_name
+#Program name: Gravity
 
 #Author: Katie Tran
 
