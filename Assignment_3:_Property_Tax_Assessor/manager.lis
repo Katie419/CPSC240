@@ -1,0 +1,319 @@
+     1                                  extern printf
+     2                                  extern scanf
+     3                                  extern strlen
+     4                                  extern stdin
+     5                                  extern fgets
+     6                                  extern isfloat
+     7                                  extern atof
+     8                                  extern get_assessed_values
+     9                                  extern display
+    10                                  extern sum
+    11                                  
+    12                                  INPUT_LEN equ 64
+    13                                  
+    14                                  global manager
+    15                                  
+    16                                  segment .data
+    17                                  
+    18 00000000 257300                  string_format db "%s", 0
+    19 00000003 256C6600                float_format db "%lf", 0
+    20                                  
+    21 00000007 506C6561736520656E-     name_prompt db "Please enter your name and press enter:  ", 0
+    21 00000010 74657220796F757220-
+    21 00000019 6E616D6520616E6420-
+    21 00000022 707265737320656E74-
+    21 0000002B 65723A202000       
+    22 00000031 506C6561736520656E-     title_prompt db "Please enter your title: ", 0
+    22 0000003A 74657220796F757220-
+    22 00000043 7469746C653A2000   
+    23 0000004B 5468616E6B20796F75-     thank_name db "Thank you %s.", 10, 0
+    23 00000054 2025732E0A00       
+    24                                  
+    25 0000005A 5468616E6B20796F75-     property_list db "Thank you.  Here are the assessed property values in this district.", 10 ,0
+    25 00000063 2E2020486572652061-
+    25 0000006C 726520746865206173-
+    25 00000075 736573736564207072-
+    25 0000007E 6F7065727479207661-
+    25 00000087 6C75657320696E2074-
+    25 00000090 686973206469737472-
+    25 00000099 6963742E0A00       
+    26                                  
+    27 0000009F 5468652073756D206F-     sum_message db "The sum of assessed values is $%.2lf.", 10, 0
+    27 000000A8 662061737365737365-
+    27 000000B1 642076616C75657320-
+    27 000000BA 69732024252E326C66-
+    27 000000C3 2E0A00             
+    28 000000C6 546865206D65616E20-     mean_message db "The mean assessed values is $%.4lf.", 10, 0
+    28 000000CF 617373657373656420-
+    28 000000D8 76616C756573206973-
+    28 000000E1 2024252E346C662E0A-
+    28 000000EA 00                 
+    29                                  
+    30 000000EB 546865206D65616E20-     return_message db "The mean will now be returned to the caller function.", 10, 0
+    30 000000F4 77696C6C206E6F7720-
+    30 000000FD 62652072657475726E-
+    30 00000106 656420746F20746865-
+    30 0000010F 2063616C6C65722066-
+    30 00000118 756E6374696F6E2E0A-
+    30 00000121 00                 
+    31 00000122 576520656E6A6F7920-     title_goodbye db "We enjoy serving everyone who is a %s.", 10, 0
+    31 0000012B 73657276696E672065-
+    31 00000134 766572796F6E652077-
+    31 0000013D 686F20697320612025-
+    31 00000146 732E0A00           
+    32                                  
+    33 0000014A 5468616E6B20796F75-     error db "Thank you.  The data input set was corrupted.  Please run this program again.", 10, 0
+    33 00000153 2E2020546865206461-
+    33 0000015C 746120696E70757420-
+    33 00000165 736574207761732063-
+    33 0000016E 6F727275707465642E-
+    33 00000177 2020506C6561736520-
+    33 00000180 72756E207468697320-
+    33 00000189 70726F6772616D2061-
+    33 00000192 6761696E2E0A00     
+    34                                  
+    35                                  segment .bss
+    36                                  
+    37 00000000 <res 00000040>          user_name resb INPUT_LEN
+    38 00000040 <res 00000040>          title_name resb INPUT_LEN
+    39 00000080 <res 00000320>          array resq 100
+    40 000003A0 <res 00000008>          array_size resq 1
+    41 000003A8 <res 00000008>          sum_value resq 1
+    42 000003B0 <res 00000008>          mean_value resq 1
+    43                                  
+    44                                  
+    45                                  segment .text
+    46                                  manager:
+    47                                  
+    48                                  ;///////////BEGIN CODE////////////////////////////////////////////
+    49                                  
+    50                                  ;===============
+    51                                  ; 16 pushes
+    52 00000000 55                      push rbp ; Push memory address of base of previous stack frame onto stack top
+    53                                  
+    54 00000001 4889E5                  mov rbp, rsp ; Copy value of stack pointer into base pointer, rbp = rsp = both point to stack top
+    55                                      ; Rbp now holds the address of the new stack frame, i.e "top" of stack
+    56                                  
+    57 00000004 57                      push rdi ; Backup rdi
+    58 00000005 56                      push rsi ; Backup rsi
+    59 00000006 52                      push rdx ; Backup rdx
+    60 00000007 51                      push rcx ; Backup rcx
+    61 00000008 4150                    push r8 ; Backup r8
+    62 0000000A 4151                    push r9 ; Backup r9
+    63 0000000C 4152                    push r10 ; Backup r10
+    64 0000000E 4153                    push r11 ; Backup r11
+    65 00000010 4154                    push r12 ; Backup r12
+    66 00000012 4155                    push r13 ; Backup r13
+    67 00000014 4156                    push r14 ; Backup r14
+    68 00000016 4157                    push r15 ; Backup r15
+    69 00000018 53                      push rbx ; Backup rbx
+    70 00000019 9C                      pushf ; Backup rflags
+    71                                  
+    72                                  ;===============
+    73                                  ;Obtain name
+    74                                  
+    75                                  ;-----
+    76                                  ;print name prompt
+    77 0000001A 6A00                    push qword 0
+    78 0000001C B800000000              mov rax, 0
+    79 00000021 48BF-                   mov rdi, string_format
+    79 00000023 [0000000000000000] 
+    80 0000002B 48BE-                   mov rsi, name_prompt
+    80 0000002D [0700000000000000] 
+    81 00000035 E8(00000000)            call printf
+    82 0000003A 58                      pop rax
+    83                                  
+    84                                  ;-----
+    85                                  ;take user name input
+    86 0000003B 48BF-                   mov rdi, user_name
+    86 0000003D [0000000000000000] 
+    87 00000045 BE40000000              mov rsi, INPUT_LEN
+    88 0000004A 488B1425[00000000]      mov rdx, [stdin]
+    89 00000052 E8(00000000)            call fgets
+    90                                  
+    91                                  ;-----
+    92                                  ;replace trailing \n with \0 in user_name
+    93 00000057 B800000000              mov rax, 0
+    94 0000005C 48BF-                   mov rdi, user_name
+    94 0000005E [0000000000000000] 
+    95 00000066 E8(00000000)            call strlen
+    96 0000006B 4883E801                sub rax, 1
+    97 0000006F C680[00000000]00        mov byte [user_name + rax], 0
+    98                                  
+    99                                  ;-----
+   100                                  
+   101                                  ;===============
+   102                                  ;Obtain job title
+   103                                  
+   104                                  ;-----
+   105                                  ;print name prompt
+   106 00000076 B800000000              mov rax, 0
+   107 0000007B 48BF-                   mov rdi, string_format
+   107 0000007D [0000000000000000] 
+   108 00000085 48BE-                   mov rsi, title_prompt
+   108 00000087 [3100000000000000] 
+   109 0000008F E8(00000000)            call printf
+   110                                  
+   111                                  ;-----
+   112                                  ;take user name input
+   113 00000094 48BF-                   mov rdi, title_name
+   113 00000096 [4000000000000000] 
+   114 0000009E BE40000000              mov rsi, INPUT_LEN
+   115 000000A3 488B1425[00000000]      mov rdx, [stdin]
+   116 000000AB E8(00000000)            call fgets
+   117                                  
+   118                                  ;-----
+   119                                  ;replace trailing \n with \0 in user_name
+   120 000000B0 B800000000              mov rax, 0
+   121 000000B5 48BF-                   mov rdi, title_name
+   121 000000B7 [4000000000000000] 
+   122 000000BF E8(00000000)            call strlen
+   123 000000C4 4883E801                sub rax, 1
+   124 000000C8 C680[40000000]00        mov byte [title_name + rax], 0
+   125                                  
+   126                                  ;==============
+   127                                  ;Print thank you message to user
+   128 000000CF 48BF-                   mov rdi, thank_name
+   128 000000D1 [4B00000000000000] 
+   129 000000D9 B801000000              mov rax, 1
+   130 000000DE 48BE-                   mov rsi, user_name
+   130 000000E0 [0000000000000000] 
+   131 000000E8 E8(00000000)            call printf
+   132                                  
+   133                                  ;===============
+   134                                  ;fill array using get_assessed values module
+   135 000000ED 48BF-                   mov rdi, array
+   135 000000EF [8000000000000000] 
+   136 000000F7 BE64000000              mov rsi, 100
+   137 000000FC E8(00000000)            call get_assessed_values
+   138 00000101 48890425[A0030000]      mov [array_size], rax ;save the array size value returned by fill
+   139                                  
+   140                                  ;-----
+   141                                  ;If size = 0 we skip to invalid
+   142 00000109 4C8B3425[A0030000]      mov r14, [array_size]
+   143 00000111 41BF00000000            mov r15, 0
+   144 00000117 4D39F7                  cmp r15, r14
+   145 0000011A 0F84A1000000            je invalid
+   146                                  
+   147                                  ;===============
+   148                                  ;Display properties
+   149                                  
+   150                                  ;-----
+   151                                  ;"Here are your assessed properties"
+   152 00000120 B800000000              mov rax, 0
+   153 00000125 48BF-                   mov rdi, property_list
+   153 00000127 [5A00000000000000] 
+   154 0000012F E8(00000000)            call printf
+   155                                  
+   156                                  ;-----
+   157                                  ;Display array using show_property_value module
+   158 00000134 B800000000              mov rax, 0
+   159 00000139 48BF-                   mov rdi, array
+   159 0000013B [8000000000000000] 
+   160 00000143 488B3425[A0030000]      mov rsi, [array_size]
+   161 0000014B E8(00000000)            call display
+   162                                  
+   163                                  ;===============
+   164                                  ;Get the sum
+   165 00000150 48BF-                   mov rdi, array
+   165 00000152 [8000000000000000] 
+   166 0000015A 488B3425[A0030000]      mov rsi, [array_size]
+   167 00000162 E8(00000000)            call sum
+   168 00000167 F20F110425-             movsd [sum_value], xmm0
+   168 0000016C [A8030000]         
+   169                                  
+   170                                  ;===============
+   171                                  ;Calculate the mean
+   172 00000170 F2440F2A1C25-           cvtsi2sd xmm11, [array_size]
+   172 00000176 [A0030000]         
+   173 0000017A F2440F102C25-           movsd xmm13, [sum_value]
+   173 00000180 [A8030000]         
+   174 00000184 F2450F5EEB              divsd xmm13, xmm11
+   175                                  
+   176                                  ;===============
+   177                                  ;Display the sum and the mean
+   178                                  
+   179                                  ;-----
+   180                                  ;Display the sum
+   181 00000189 B801000000              mov rax, 1
+   182 0000018E 48BF-                   mov rdi, sum_message
+   182 00000190 [9F00000000000000] 
+   183 00000198 F20F100425-             movsd xmm0, [sum_value]
+   183 0000019D [A8030000]         
+   184 000001A1 E8(00000000)            call printf
+   185                                  
+   186                                  ;-----
+   187                                  ;Display the mean
+   188 000001A6 B801000000              mov rax, 1
+   189 000001AB 48BF-                   mov rdi, mean_message
+   189 000001AD [C600000000000000] 
+   190 000001B5 F2410F10C5              movsd xmm0, xmm13
+   191 000001BA E8(00000000)            call printf
+   192                                  
+   193                                  ;===============
+   194                                  ;Jump to End
+   195 000001BF EB3F                    jmp exit
+   196                                  
+   197                                  ;===============
+   198                                  ;invalid
+   199                                  invalid:
+   200                                  
+   201 000001C1 B800000000              mov rax, 0
+   202 000001C6 50                      push rax
+   203 000001C7 F2440F102424            movsd xmm12, [rsp]
+   204 000001CD 58                      pop rax
+   205                                  
+   206 000001CE B801000000              mov rax, 1
+   207 000001D3 48BF-                   mov rdi, sum_message
+   207 000001D5 [9F00000000000000] 
+   208 000001DD F2410F10C4              movsd xmm0, xmm12
+   209 000001E2 E8(00000000)            call printf
+   210                                  
+   211 000001E7 B801000000              mov rax, 1
+   212 000001EC 48BF-                   mov rdi, mean_message
+   212 000001EE [C600000000000000] 
+   213 000001F6 F2410F10C4              movsd xmm0, xmm12
+   214 000001FB E8(00000000)            call printf
+   215                                  
+   216                                  ;==============
+   217                                  ;Finish Program
+   218                                  exit:
+   219                                  
+   220 00000200 B800000000              mov rax, 0
+   221 00000205 48BF-                   mov rdi, string_format
+   221 00000207 [0000000000000000] 
+   222 0000020F 48BE-                   mov rsi, return_message
+   222 00000211 [EB00000000000000] 
+   223 00000219 E8(00000000)            call printf
+   224                                  
+   225 0000021E B801000000              mov rax, 1
+   226 00000223 48BF-                   mov rdi, title_goodbye
+   226 00000225 [2201000000000000] 
+   227 0000022D 48BE-                   mov rsi, title_name
+   227 0000022F [4000000000000000] 
+   228 00000237 E8(00000000)            call printf
+   229                                  
+   230 0000023C F20F100425-             movsd xmm0, [mean_value]
+   230 00000241 [B0030000]         
+   231                                  
+   232                                  ;-----
+   233                                  ;16 pops
+   234                                  
+   235 00000245 9D                      popf ; Restore rflags
+   236 00000246 5B                      pop rbx ; Restore rbx
+   237 00000247 415F                    pop r15 ; Restore r15
+   238 00000249 415E                    pop r14 ; Restore r14
+   239 0000024B 415D                    pop r13 ; Restore r13
+   240 0000024D 415C                    pop r12 ; Restore r12
+   241 0000024F 415B                    pop r11 ; Restore r11
+   242 00000251 415A                    pop r10 ; Restore r10
+   243 00000253 4159                    pop r9 ; Restore r9
+   244 00000255 4158                    pop r8 ; Restore r8
+   245 00000257 59                      pop rcx ; Restore rcx
+   246 00000258 5A                      pop rdx ; Restore rdx
+   247 00000259 5E                      pop rsi ; Restore rsi
+   248 0000025A 5F                      pop rdi ; Restore rdi
+   249                                  
+   250 0000025B 5D                      pop rbp ; Restore rbp
+   251                                  
+   252 0000025C C3                      ret ;  return
