@@ -13,7 +13,8 @@ rm *.lis
 echo "Assembling .asm file"
 nasm -f elf64 -l asm_program.lis -o asm_program.o asm_program.asm
 
-# You do this for each .c or .cpp files only difference is specifiying the version -std=c++17 or -std=c11
+# You do this for each .c or .cpp files
+# Make sure to specifiy the language standard; ex std=c++17(C++) or -std=c11(C)
 echo "compile .cpp using gcc compiler standard 2017"
 gcc -c -Wall -m64 -no-pie -o driver.o driver.cpp -std=c++17
 
